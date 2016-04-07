@@ -1,11 +1,5 @@
 #include "multiserver.h"
 #include "ui_multiserver.h"
-#include <QtDebug>
-#include "networkmanager.h"
-#include "receiver.h"
-#include "networkaudioplayer.h"
-
-NetworkManager netManager;
 
 /*
  * Constructor for the multiserver window class.
@@ -19,6 +13,7 @@ MultiServer::MultiServer(QWidget *parent) :
     QDir dir;
     ui->listMusicFiles->addItems(dir.entryList(QStringList("*.wav")));
     currentQueueIndex = -1;
+    netAudioPlayer = new NetworkAudioPlayer();
 }
 
 /*
@@ -28,27 +23,6 @@ MultiServer::~MultiServer()
 {
     delete ui;
 }
-
-/*
- * When the user clicks the stop button, stop the audio, and stop the queue
- * thread from attempting to play the next song.
- */
-void MultiServer::on_buttonStopAudio_released()
-{
-    stopThreadLoop = true;
-    audioManager->stopAudio();
-    currentQueueIndex--;
-}
-
-/*
- * When the user clicks the pause button, pause the audio playing.
- */
-void MultiServer::on_buttonPauseAudio_released()
-{
-    if (audioManager->isPlaying())
-        audioManager->pauseAudio();
-}
-
 
 /*void MultiServer::on_sliderSound_actionTriggered(int action)
 {
@@ -137,23 +111,6 @@ void MultiServer::on_SendAudioButton_released()
 
 void MultiServer::on_StopSendingButton_released()
 {
-    qDebug() << "Stop";
-    netManager.startNetwork();
-    char host[20] = "192.168.0.10";
-    netManager.connectViaTCP(host, 8000);
-    netManager.setupUDPforP2P();
-    Receiver r;
-    r.startUDPReceiver(7000);
-    QThread * thread = new QThread( );
-    NetworkAudioPlayer * netPlayer = new NetworkAudioPlayer();
-    netPlayer->setParameters();
-    netPlayer->moveToThread(thread);
-
-    connect (audioBuffer, &CircularBuffer::stopReading, netPlayer, &NetworkAudioPlayer::stopAudio);
-    connect (audioBuffer, &CircularBuffer::startReading, netPlayer, &NetworkAudioPlayer::playAudio);
-
-    thread->start();
-
 }
 
 /*
@@ -169,25 +126,15 @@ void MultiServer::successfulConnection(bool connected) {
         AddStatusMessage("Unable to connect to peer.");
 }
 
-/*
- * This function will disconnect the user when they click the disconnect button.
- */
-void MultiServer::on_buttonDisconnect_released()
+void MultiServer::on_BroadcastButton_released()
 {
-    // ---- TODO ---- disconnect this peer here.
-    AddStatusMessage("Disconnected from peer.");
-}
-
-/*
- * This function catches a click on the play audio button. If the button is clicked,
- * it will play the audio from where it left off if its paused, if not, it will play
- * the next song in the list.
- */
-void MultiServer::on_buttonPlay_released()
-{
-    if (audioManager->isPaused()) {
-        audioManager->playAudio();
-    } else {
-        playNextSong();
+    if (!netManager->startNetwork())
+    {
+        return;
     }
+    if (!netManager->createMulticastServerSocket())
+    {
+        return;
+    }
+
 }

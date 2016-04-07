@@ -7,8 +7,7 @@
 #include <QBuffer>
 #include <QIODevice>
 #include "audiomanager.h"
-#include "globalobjects.h"
-#include "receiver.h"
+#include "circularbuffer.h"
 
 class NetworkAudioPlayer : public QObject
 {
@@ -18,10 +17,10 @@ public:
 private:
     QAudioFormat format;
     QAudioOutput *audio;
-    QBuffer outputBuffer[2];
     QIODevice * audioDevice;
     QAudioDeviceInfo deviceinfo;
     bool second;
+    CircularBuffer * audioBuffer;
 signals:
 public slots:
     void playAudio();

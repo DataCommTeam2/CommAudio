@@ -1,11 +1,11 @@
 #include "networkaudioplayer.h"
+#include "networkmanager.h"
 
 NetworkAudioPlayer::NetworkAudioPlayer()
 {
     second = false;
 
     audioBuffer = new CircularBuffer(DATA_BUFSIZE, MAX_BLOCKS);
-    InitializeCriticalSection(&bufferAccess);
 
 }
 
@@ -37,17 +37,7 @@ void NetworkAudioPlayer::setParameters()
 
 void NetworkAudioPlayer::playAudio()
 {
-    EnterCriticalSection(&bufferAccess);
     char * data = audioBuffer->cbRead(0.1 * MAX_BLOCKS);
-    LeaveCriticalSection(&bufferAccess);
-    outputBuffer[0].setData(data);
-    outputBuffer[0].open(QIODevice::ReadOnly);
-    second = true;
-    if ((audioDevice->write(outputBuffer[0].buffer()) == -1))
-    {
-            //error
-            return;
-    }
 }
 
 void NetworkAudioPlayer::appendAudioData()
