@@ -3,7 +3,26 @@
 SOCKET udpSocket;
 SOCKET tcpSocket;
 struct sockaddr_in udpPeer;
+/*---------------------------------------------------------------------------------
+--	FUNCTION: startNetwork
+--
+--	DATE:		April 12, 2016
+--
+--	REVISIONS:	April 12, 2016
+--
+--	DESIGNER:	Tom Tang
+--
+--	PROGRAMMER:	Tom Tang
+--
+--	INTERFACE:	startNetwork()
+--
 
+--	RETURNS:	bool - returns wether or not the network has been started
+--
+--	NOTES:
+--	This function starts the network server for multicast and peer to peer
+--
+---------------------------------------------------------------------------------*/
 bool NetworkManager::startNetwork()
 {
     WSADATA wsaData;
@@ -44,6 +63,28 @@ bool NetworkManager::startNetwork()
     return true;
 }
 
+/*---------------------------------------------------------------------------------
+--	FUNCTION: connectViaTCP
+--
+--	DATE:		April 12, 2016
+--
+--	REVISIONS:	April 12, 2016
+--
+--	DESIGNER:	Tom Tang
+--
+--	PROGRAMMER:	Tom Tang
+--
+--	INTERFACE:	startNetwork()
+--
+--  PARAMETERS:	char * hostname - hostname of server
+--				      int port - port of server
+--
+--	RETURNS:	void
+--
+--	NOTES:
+--	This function connects to a server via tcp
+--
+---------------------------------------------------------------------------------*/
 void NetworkManager::connectViaTCP(char * hostname, int port)
 {
     struct hostent	*hp;
@@ -69,6 +110,25 @@ void NetworkManager::connectViaTCP(char * hostname, int port)
     tcpConnected = true;
 }
 
+/*---------------------------------------------------------------------------------
+--	FUNCTION: cleanUp
+--
+--	DATE:		April 12, 2016
+--
+--	REVISIONS:	April 12, 2016
+--
+--	DESIGNER:	Tom Tang
+--
+--	PROGRAMMER:	Tom Tang
+--
+--  INTERFACE:	cleanUp()
+--
+--	RETURNS:	void
+--
+--	NOTES:
+--	This function closes the sockets when called
+--
+---------------------------------------------------------------------------------*/
 void NetworkManager::cleanUp()
 {
     closesocket(udpSocket);
@@ -76,6 +136,25 @@ void NetworkManager::cleanUp()
     WSACleanup();
 }
 
+/*---------------------------------------------------------------------------------
+--	FUNCTION: setupUDPforP2P
+--
+--	DATE:		April 12, 2016
+--
+--	REVISIONS:	April 12, 2016
+--
+--	DESIGNER:	Tom Tang
+--
+--	PROGRAMMER:	Tom Tang
+--
+--  INTERFACE:	setupUDPforP2P()
+--
+--	RETURNS:	void
+--
+--	NOTES:
+--	This function sets up a UDP server for peet to peer sending 
+--
+---------------------------------------------------------------------------------*/
 void NetworkManager::setupUDPforP2P()
 {
     memset((char *)&udpPeer, 0, sizeof(udpPeer));
