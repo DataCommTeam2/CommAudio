@@ -1007,3 +1007,13 @@ void CALLBACK tcpRoutine(DWORD errorCode, DWORD bytesTransferred, LPOVERLAPPED o
     }
 }
 
+bool NetworkManager::multicastDisconnect()
+{
+    if (setsockopt(udpSocket, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char*)&stMreq, sizeof(stMreq))== SOCKET_ERROR)
+    {
+        return false;
+    }
+    closesocket(udpSocket);
+    return true;
+}
+

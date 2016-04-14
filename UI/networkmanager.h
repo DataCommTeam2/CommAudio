@@ -58,6 +58,7 @@ public:
     void startTCPReceiver(int port);
     void sendP2P(char * buf, int length);
     bool createTCPSocket();
+    bool multicastDisconnect();
 
     static CircularBuffer * incBuffer;
     static CircularBuffer * tcpBuffer;
