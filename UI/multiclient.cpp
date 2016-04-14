@@ -207,7 +207,7 @@ void MultiClient::successfulConnection(bool connected) {
 void MultiClient::on_buttonDisconnect_released()
 {
     // ---- TODO ---- disconnect this client here.
-    netManager->MulticastDisconnect();
+    netManager->multicastDisconnect();
     AddStatusMessage("Disconnected from server.");
     ui->IPControls->show();
     ui->PortControls->show();
