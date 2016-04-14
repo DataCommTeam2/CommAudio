@@ -25,8 +25,9 @@ struct ip_mreq stMreq;
 char incFilename[256];
 
 CircularBuffer * NetworkManager::incBuffer;
-CircularBuffer * NetworkManager::tcpBuffer = NULL;
+CircularBuffer * NetworkManager::tcpBuffer= NULL;
 SOCKET NetworkManager::acceptSocket;
+bool NetworkManager::tcpConnected = false;
 
 DWORD WINAPI udpThread(LPVOID lpParameter);
 DWORD WINAPI startUDPServer(LPVOID n);
@@ -169,7 +170,7 @@ bool NetworkManager::connectToPeer(const char * hostname, int port)
 {
     closesocket(tcpSocket);
     tcpServerRunning = false;
-    delete NetworkManager::tcpBuffer;
+    tcpConnected = false;
     createTCPSocket();
     NetworkManager::acceptSocket = tcpSocket;
     bool success = connectP2P(hostname, port);
@@ -200,6 +201,7 @@ bool connectP2P(const char * hostname, int port)
         return false;
     }
 
+    NetworkManager::tcpConnected = true;
     if ((tcpHandle = CreateThread(NULL, 0, startConnectedTCPReceive, 0, 0, &tcpThreadId)) == NULL)
     {
         //display error
@@ -767,7 +769,7 @@ DWORD WINAPI startTCPServer(LPVOID n)
     while (tcpServerRunning)
     {
         NetworkManager::acceptSocket = accept(tcpSocket, NULL, NULL);
-
+        NetworkManager::tcpConnected = true;
         if (WSASetEvent(tcpEvent) == FALSE)
         {
             //sprintf(message, "WSASetEvent failed with error %d\n", WSAGetLastError());
@@ -986,7 +988,7 @@ void CALLBACK tcpRoutine(DWORD errorCode, DWORD bytesTransferred, LPOVERLAPPED o
 
     if (bytesTransferred > 0)
     {
-        if (!(NetworkManager::tcpBuffer->cbWrite(socketInfo->DataBuf.buf, socketInfo->DataBuf.len)))
+        if (!(NetworkManager::tcpBuffer->cbWrite(socketInfo->DataBuf.buf, bytesTransferred)))
         {
         }
     }
