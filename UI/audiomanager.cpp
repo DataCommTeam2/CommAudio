@@ -42,8 +42,7 @@ bool AudioManager::setupAudioPlayerNoFile(CircularBuffer * buffer) {
 
     audio = new QAudioOutput(format, parent);
     audio->setVolume(constantVolume);
-    audioBuf = new CircularBuffer(DATA_BUFSIZE, MAX_BLOCKS);
-
+    audio->setBufferSize(DATA_BUFSIZE*10);
     audioBuf = buffer;
     return true;
 }
@@ -55,12 +54,11 @@ bool AudioManager::setupAudioPlayerP2P(CircularBuffer * buffer) {
 
     format.setCodec("audio/pcm");
     format.setByteOrder(QAudioFormat::LittleEndian);
-    format.setSampleType(QAudioFormat::SignedInt);
+    format.setSampleType(QAudioFormat::UnSignedInt);
 
     audio = new QAudioOutput(format, parent);
     audio->setVolume(constantVolume);
-    audioBuf = new CircularBuffer(DATA_BUFSIZE, MAX_BLOCKS);
-
+    audio->setBufferSize(DATA_BUFSIZE*10);
     audioBuf = buffer;
     return true;
 }

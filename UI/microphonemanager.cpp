@@ -40,7 +40,6 @@ void MicrophoneManager::RecordAudio()
 
     connect(audioDevice, SIGNAL(readyRead()), micListener, SLOT(checkMicrophone()));
     connect(micListener, SIGNAL(sendDataFromMic(char *, int)), this, SLOT(sendData(char *, int)));
-    //connect(audioDevice, SIGNAL( bytesWritten ( qint64 )), SLOT( bytesWritten ( qint64 )) );
     recordThread->start();
 }
 void MicrophoneManager::sendData(char * data, int length)
