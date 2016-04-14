@@ -93,7 +93,7 @@ int NetworkManager::createMulticastServerSocket(const char * IP, int port)
 
     /* Assign our destination address */
     stDstAddr.sin_family = AF_INET;
-    stDstAddr.sin_addr.s_addr = inet_addr("234.7.8.9");
+    stDstAddr.sin_addr.s_addr = inet_addr(IP);
     stDstAddr.sin_port = htons(port);
 
     if (udpSender == NULL)
@@ -137,7 +137,7 @@ bool NetworkManager::createMulticastClientSocket(const char * serverAddr, int po
     }
 
     //stMreq.imr_multiaddr.s_addr = inet_addr(serverAddr);
-    stMreq.imr_multiaddr.s_addr = inet_addr("234.7.8.9");
+    stMreq.imr_multiaddr.s_addr = inet_addr(serverAddr);
     stMreq.imr_interface.s_addr = INADDR_ANY;
     if (setsockopt(udpSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&stMreq, sizeof(stMreq)) == SOCKET_ERROR)
     {
@@ -166,6 +166,7 @@ bool NetworkManager::createTCPSocket()
     return true;
 }
 
+
 bool NetworkManager::connectToPeer(const char * hostname, int port)
 {
     closesocket(tcpSocket);
@@ -177,6 +178,7 @@ bool NetworkManager::connectToPeer(const char * hostname, int port)
     return success;
 }
 
+//>>>>>>> 18aaf3d0ab9ab40b75ba5d04f142f432438b70e3
 bool connectP2P(const char * hostname, int port)
 {
     struct hostent	*hp;
@@ -990,6 +992,7 @@ void CALLBACK tcpRoutine(DWORD errorCode, DWORD bytesTransferred, LPOVERLAPPED o
     {
         if (!(NetworkManager::tcpBuffer->cbWrite(socketInfo->DataBuf.buf, bytesTransferred)))
         {
+
         }
     }
 

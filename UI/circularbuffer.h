@@ -3,6 +3,36 @@
 
 #include <QObject>
 
+
+/*--------------------------------------------------------------------------------------------  
+--  SOURCE:          CircularBuffer
+--  
+--  PROGRAM:         CommAudio
+--  
+--  FUNCTIONS:       CircularBuffer(int size, int blocks);
+--                   bool cbWrite(const char * data, size_t length);
+--                   char * cbRead(int blocksToRead);
+--                   bool isEmpty();
+--                   bool isFull();
+--                   int getBlocksUnread();
+--                   int getLastBytesWritten();
+--                   ~CircularBuffer();
+--                   void stopWriting();
+--                   void startReading();
+--                   void stopReading();
+--                   
+--  
+--  DATE:            CommAudio
+--  
+--  DESIGNERS:       Gabriella Cheung
+--  
+--  REVISIONS:       Several
+--  
+--  PROGRAMMERS:     Gabriella Cheung
+--  
+--  NOTES:           This class is a circular buffer for reading/writing and sending and reciving data
+--                   accross the network.
+------------------------------------------------------------------------------------------*/
 class CircularBuffer : public QObject
 {
     Q_OBJECT

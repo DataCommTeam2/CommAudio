@@ -15,6 +15,39 @@
 #define DATA_BUFSIZE    8192
 #define MAX_BLOCKS      100
 
+
+/*--------------------------------------------------------------------------------------------  
+--  SOURCE:          AudioManager
+--  
+--  PROGRAM:         CommAudio
+--  
+--  FUNCTIONS:       AudioManager(QObject * p) : parent(p);
+--                   QAudioOutput * playAudio();
+--                   bool setupAudioPlayer(QFile * file);
+--                   bool setupAudioPlayerNoFile(CircularBuffer *);
+--                   bool setupAudioPlayerP2P(CircularBuffer *);
+--                   void setVolume(double volume);
+--                   bool stopAudio();
+--                   void pauseAudio();
+--                   void unpauseAudio();
+--                   bool isPaused();
+--                   bool isPlaying();
+--                   CircularBuffer * getAudioBuffer();
+--                   ~AudioManager();
+--                   
+--  
+--  DATE:            CommAudio
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--                   Gabriella Cheung
+--  
+--  REVISIONS:       Several
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--                   Gabriella Cheung
+--  
+--  NOTES:           This class handles local audio playing through a buffer using QAudioOutput.
+------------------------------------------------------------------------------------------*/
 class AudioManager : public QObject
 {
     Q_OBJECT
@@ -35,6 +68,7 @@ public:
     bool isPaused();
     bool isPlaying();
     CircularBuffer * getAudioBuffer();
+    bool allowWrite = true;
 
     ~AudioManager();
 

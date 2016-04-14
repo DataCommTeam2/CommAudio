@@ -6,6 +6,27 @@
 
 #define MAX_LEN 8192
 
+/*--------------------------------------------------------------------------------------------  
+--  SOURCE:          AudioRecordThread
+--  
+--  PROGRAM:         CommAudio
+--  
+--  FUNCTIONS:       AudioRecordThread(QIODevice * buf): buffer(buf), position(0)
+--                   void checkMicrophone()
+--                   void sendDataFromMic(char *, int);
+--                   
+--  
+--  DATE:            CommAudio
+--  
+--  DESIGNERS:       Gabriella Cheung
+--  
+--  REVISIONS:       Several
+--  
+--  PROGRAMMERS:     Gabriella Cheung
+--  
+--  NOTES:           This thread is for processing audio recordings into the circular buffer for sending
+--                   to clients.
+------------------------------------------------------------------------------------------*/
 class AudioRecordThread : public QObject
 {
     Q_OBJECT
