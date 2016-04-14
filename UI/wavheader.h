@@ -2,6 +2,26 @@
 #define WAVHEADER_H
 #include <inttypes.h>
 
+
+/*--------------------------------------------------------------------------------------------  
+--  SOURCE:          WAV_HEADER
+--  
+--  PROGRAM:         CommAudio
+--  
+--  FUNCTIONS:       
+--  
+--  DATE:            CommAudio
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       Several
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  NOTES:           This is a struct which contains data types the size of which the header of most wav
+--                   files would match. This allows reading of a wav file of sizeof this struct to easily
+--                   populate the data which makes up the data of the wav header.
+------------------------------------------------------------------------------------------*/
 typedef struct  WAV_HEADER
 {
     /* RIFF Chunk Descriptor */

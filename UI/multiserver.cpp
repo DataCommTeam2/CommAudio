@@ -3,9 +3,23 @@
 
 QThread * audioSenderThread;
 
-/*
- * Constructor for the multiserver window class.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        MultiServer
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       MultiServer::MultiServer(QWidget *parent)
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           Constructor for the multiserver window class.
+------------------------------------------------------------------------------------------*/
 MultiServer::MultiServer(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MultiServer)
@@ -24,9 +38,23 @@ MultiServer::MultiServer(QWidget *parent) :
     netManager = new NetworkManager();
 }
 
-/*
- * Destructor for the multi server window class.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        ~MultiServer
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       MultiServer::~MultiServer()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           Destructor for the multi server window class.
+------------------------------------------------------------------------------------------*/
 MultiServer::~MultiServer()
 {
     stopThreadLoop = true;
@@ -37,11 +65,23 @@ MultiServer::~MultiServer()
     delete ui;
 }
 
-/*void MultiServer::on_sliderSound_actionTriggered(int action)
-{
-    audioManager->setVolume((double)ui->sliderSound->sliderPosition() / 100);
-}*/
-
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_QueueAddButton_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiServer::on_QueueAddButton_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function will add a song the the playlist queue.
+------------------------------------------------------------------------------------------*/
 void MultiServer::on_QueueAddButton_released()
 {
     QList<QListWidgetItem *> selectedFile = ui->listMusicFiles->selectedItems();
@@ -51,10 +91,24 @@ void MultiServer::on_QueueAddButton_released()
     ui->listQueueFiles->addItem(index->text());
 }
 
-/*
- * This function will play the next song in the list. It is auto triggered if it finds the
- * currently playing song has finished.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        playNextSong
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiServer::playNextSong() 
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function will play the next song in the list. It is auto triggered if it finds the
+--                   currently playing song has finished.
+------------------------------------------------------------------------------------------*/
 void MultiServer::playNextSong() {
     if (stopThreadLoop) {
         if (!deviceListener && !netAudioPlayer)
@@ -104,11 +158,48 @@ void MultiServer::playNextSong() {
     audioSenderThread->start();
 }
 
+
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        sendData
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiServer::sendData(char * buffer, int length)
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function will send data accross the P2P connection to the other client.
+------------------------------------------------------------------------------------------*/
 void MultiServer::sendData(char * buffer, int length)
 {
     netManager->sendMulticast(buffer, length);
 }
 
+
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        checkQueue
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiServer::checkQueue(QAudioOutput * audioOut)
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function checks the playlist for songs and resets the audio manager for
+--                   the particular song.
+------------------------------------------------------------------------------------------*/
 void MultiServer::checkQueue(QAudioOutput * audioOut)
 {
     QThread * queueThread = new QThread();
@@ -124,30 +215,71 @@ void MultiServer::checkQueue(QAudioOutput * audioOut)
     queueThread->start();
 }
 
-/*
- * This function will add a status message to the status bar.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        AddStatusMessage
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiServer::AddStatusMessage(const QString msg)
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function will add a status message to the status bar.
+------------------------------------------------------------------------------------------*/
 void MultiServer::AddStatusMessage(const QString msg) {
     if (!stopThreadLoop)
         ui->StatusBar->addItem(QString(msg));
 }
 
-/*
- * This function will remove the selected songs from the queue list when
- * the user clicks the remove queue button.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_QueueRemoveButton_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiServer::on_QueueRemoveButton_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function will remove the selected songs from the queue list when
+--                   the user clicks the remove queue button.
+------------------------------------------------------------------------------------------*/
 void MultiServer::on_QueueRemoveButton_released()
 {
     QList<QListWidgetItem *> indexes = ui->listQueueFiles->selectedItems();
     qDeleteAll(indexes.begin(), indexes.end());
 }
 
-/*
- * This function will be called by the network layer to notify the application layer
- * with a confirmation message on a successful connection.
- * param bool connected = if true, successful connection, else, connection failed.
- */
-// ---- TODO ---- call this function on successful connection
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        successfulConnection
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiServer::successfulConnection(bool connected)
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function will be called by the network layer to notify the application layer
+--                   with a confirmation message on a successful connection.
+--                   param bool connected = if true, successful connection, else, connection failed.
+------------------------------------------------------------------------------------------*/
 void MultiServer::successfulConnection(bool connected) {
     if (connected)
         AddStatusMessage("Connection Successful!");
@@ -155,6 +287,24 @@ void MultiServer::successfulConnection(bool connected) {
         AddStatusMessage("Unable to connect to peer.");
 }
 
+
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_BroadcastButton_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiServer::on_BroadcastButton_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function will send data accross the P2P connection to the other client.
+------------------------------------------------------------------------------------------*/
 void MultiServer::on_BroadcastButton_released()
 {
     if (isDataSending) {
@@ -198,6 +348,23 @@ void MultiServer::on_BroadcastButton_released()
 
 }
 
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_SendMicrophone_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiServer::on_SendMicrophone_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           were no longer sending microphone data
+------------------------------------------------------------------------------------------*/
 void MultiServer::on_SendMicrophone_released()
 {
     if (isMicrophoneSending) {

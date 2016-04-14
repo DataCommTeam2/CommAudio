@@ -4,9 +4,88 @@
 
 QThread * audioSendThread;
 
-/*
- * Constructor for the multiserver window class.
- */
+/*--------------------------------------------------------------------------------------------  
+--  SOURCE:          PeerToPeer
+--  
+--  PROGRAM:         CommAudio
+--  
+--  FUNCTIONS:       explicit PeerToPeer(QWidget *parent = 0);
+--                   
+--                   ~PeerToPeer();
+--                   
+--                   void on_sliderSound_actionTriggered(int action);
+--                   
+--                   void on_buttonConnect_released();
+--                   
+--                   void on_DataSendingButton_released();
+--                   
+--                   void on_buttonStopAudio_released();
+--                   
+--                   void on_buttonPauseAudio_released();
+--                   
+--                   void on_QueueAddButton_released();
+--                   
+--                   void playNextSong();
+--                   
+--                   void AddStatusMessage(const QString msg);
+--                   
+--                   void on_QueueRemoveButton_released();
+--                   
+--                   void successfulConnection(bool connected);
+--                   
+--                   void on_buttonDisconnect_released();
+--                   
+--                   void on_buttonPlay_released();
+--                   
+--                   void on_SendMicrophone_released();
+--                   
+--                   void on_OpenPathButton_released();
+--                   
+--                   void startP2P(const char * ip, int port);
+--                   
+--                   void checkQueue(QAudioOutput * audioOut);
+--                   
+--                   void startTCP(int port);
+--                   
+--                   void on_requestFileButton_released();
+--                   
+--                   void sendData(char * buffer, int length);
+--                   
+--                   void stopMicrophoneRecording();
+--                   
+--                   void stopAudio();
+--  
+--  DATE:            CommAudio
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       Several
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  NOTES:           This is the UI class for the Peer to Peer window. This class handles all interactions
+--                   with the peer to peer window.
+------------------------------------------------------------------------------------------*/
+
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        PeerToPeer
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       PeerToPeer::PeerToPeer(QWidget *parent)
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           Constructor for the peer to peer UI class. This constructor will setup files to read
+--                   and set them up for the user to browse. It will also create necessary objects to 
+--                   play and stream audio.
+------------------------------------------------------------------------------------------*/
 PeerToPeer::PeerToPeer(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::PeerToPeer)
@@ -33,12 +112,47 @@ PeerToPeer::PeerToPeer(QWidget *parent) :
     ui->StatusBar->setMaximumHeight(1000);
     ui->buttonDisconnect->hide();
 }
+
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        startTCP
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Gabriella Cheung
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Gabriella Cheung
+--  
+--  INTERFACE:       void PeerToPeer::startTCP(int port)
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function starts a TCP connection.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::startTCP(int port)
 {
     networkManager->createTCPSocket();
     networkManager->startTCPReceiver(port); // use default port for now
 }
 
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        startP2P
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Gabriella Cheung
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Gabriella Cheung
+--  
+--  INTERFACE:       void PeerToPeer::startP2P(const char * ip, int port)
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function starts a peer to peer connection using UDP.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::startP2P(const char * ip, int port)
 {
     //start UDP receiver and sender
@@ -63,27 +177,70 @@ void PeerToPeer::startP2P(const char * ip, int port)
     playThread->start();
 }
 
-/*
- * Destructor for the peer to peer window class.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        ~PeerToPeer
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void PeerToPeer::~PeerToPeer();
+--  
+--  RETURNS:         void
+--  
+--  NOTES:            Destructor for the peer to peer window class.
+------------------------------------------------------------------------------------------*/
 PeerToPeer::~PeerToPeer()
 {
     delete audioManager;
     delete ui;
 }
 
-/*
- * This function is called when the user moves the sound slider, it'll adjust the local program sound.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_sliderSound_actionTriggered
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void PeerToPeer::on_sliderSound_actionTriggered(int action)
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function is called when the user moves the sound slider, it'll adjust the
+--                   local program sound.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::on_sliderSound_actionTriggered(int action)
 {
     audioManager->setVolume((double)ui->sliderSound->sliderPosition() / 100);
     localAudioManager->setVolume((double)ui->sliderSound->sliderPosition() / 100);
 }
 
-/*
- * Triggered on connect button clicked. It will check to see if the fields.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_buttonConnect_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void PeerToPeer::on_buttonConnect_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           Triggered on connect button clicked. It will check to see if the fields.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::on_buttonConnect_released()
 {
     if (ui->lineIPAddress->text().length() <= 0)
@@ -108,10 +265,24 @@ void PeerToPeer::on_buttonConnect_released()
     successfulConnection(true);
 }
 
-/*
- * When the user clicks the stop button, stop the audio, and stop the queue
- * thread from attempting to play the next song.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_buttonStopAudio_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void PeerToPeer::on_buttonStopAudio_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           When the user clicks the stop button, stop the audio, and stop the queue
+--                   thread from attempting to play the next song.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::on_buttonStopAudio_released()
 {
     localAudioManager->stopAudio();
@@ -121,18 +292,47 @@ void PeerToPeer::on_buttonStopAudio_released()
         return;
 }
 
-/*
- * When the user clicks the pause button, pause the audio playing.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_buttonPauseAudio_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void PeerToPeer::on_buttonPauseAudio_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           When the user clicks the pause button, pause the audio playing.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::on_buttonPauseAudio_released()
 {
     if (localAudioManager->isPlaying())
         localAudioManager->pauseAudio();
 }
 
-/*
- * When the user clicks the queue add button, it'll add the selected items to the queue list to play.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_QueueAddButton_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void PeerToPeer::on_QueueAddButton_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           When the user clicks the queue add button, it'll add the selected 
+--                   items to the queue list to play.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::on_QueueAddButton_released()
 {
     QList<QListWidgetItem *> selectedFile = ui->listMusicFiles->selectedItems();
@@ -142,21 +342,49 @@ void PeerToPeer::on_QueueAddButton_released()
     ui->listQueueFiles->addItem(index->text());
 }
 
-/*
- * This function will remove the selected songs from the queue list when
- * the user clicks the remove queue button.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_QueueRemoveButton_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void PeerToPeer::on_QueueRemoveButton_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function will remove the selected songs from the queue list when
+--                   the user clicks the remove queue button.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::on_QueueRemoveButton_released()
 {
     QList<QListWidgetItem *> indexes = ui->listQueueFiles->selectedItems();
     qDeleteAll(indexes.begin(), indexes.end());
 }
 
-/*
- * This function catches a click on the play audio button. If the button is clicked,
- * it will play the audio from where it left off if its paused, if not, it will play
- * the next song in the list.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_buttonPlay_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void PeerToPeer::on_buttonPlay_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function catches a click on the play audio button. If the button is clicked,
+--                   it will play the audio from where it left off if its paused, if not, it will play
+--                   the next song in the list.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::on_buttonPlay_released()
 {
     if (localAudioManager->isPaused()) {
@@ -166,20 +394,47 @@ void PeerToPeer::on_buttonPlay_released()
     }
 }
 
-/*
- * This function will add a status message to the status bar.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        AddStatusMessage
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void PeerToPeer::AddStatusMessage(const QString msg)
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function will add a status message to the status bar.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::AddStatusMessage(const QString msg) {
     if (!stopThreadLoop)
         ui->StatusBar->addItem(QString(msg));
 }
 
-/*
- * This function will be called by the network layer to notify the application layer
- * with a confirmation message on a successful connection.
- * param bool connected = if true, successful connection, else, connection failed.
- */
-// ---- TODO ---- call this function on successful connection
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        successfulConnection
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void PeerToPeer::successfulConnection(bool connected)
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function will be called by the network layer to notify the application layer
+--                   with a confirmation message on a successful connection.
+--                   param bool connected = if true, successful connection, else, connection failed.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::successfulConnection(bool connected) {
     if (connected) {
         ui->fileTransferControls->show();
@@ -198,9 +453,23 @@ void PeerToPeer::successfulConnection(bool connected) {
         AddStatusMessage("Unable to connect to peer.");
 }
 
-/*
- * This function will disconnect the user when they click the disconnect button.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_buttonDisconnect_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void PeerToPeer::on_buttonDisconnect_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function will disconnect the user when they click the disconnect button.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::on_buttonDisconnect_released()
 {
     // ---- TODO ---- disconnect this peer here.
@@ -219,6 +488,23 @@ void PeerToPeer::on_buttonDisconnect_released()
     ui->connectionControls->setMaximumHeight(250);
 }
 
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_SendMicrophone_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void PeerToPeer::on_SendMicrophone_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           were no longer sending microphone data
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::on_SendMicrophone_released()
 {
     if (isMicrophoneSending) {
@@ -237,10 +523,24 @@ void PeerToPeer::on_SendMicrophone_released()
     isMicrophoneSending = !isMicrophoneSending;
 }
 
-/*
- * When the user clicks the data sending button, this button will trigger on
- * and off for sending data.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_DataSendingButton_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void PeerToPeer::on_DataSendingButton_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           When the user clicks the data sending button, this button will trigger on
+--                   and off for sending data.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::on_DataSendingButton_released()
 {
     if (ui->listQueueFiles->count() <= 0) {
@@ -294,11 +594,46 @@ void PeerToPeer::on_DataSendingButton_released()
     audioSendThread->start();
 }
 
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        sendData
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void PeerToPeer::sendData(char * buffer, int length)
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function will send data accross the P2P connection to the other client.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::sendData(char * buffer, int length)
 {
     networkManager->sendP2P(buffer, length);
 }
 
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        checkQueue
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void PeerToPeer::checkQueue(QAudioOutput * audioOut)
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function checks the playlist for songs and resets the audio manager for
+--                   the particular song.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::checkQueue(QAudioOutput * audioOut)
 {
     QThread * queueThread = new QThread();
@@ -315,10 +650,24 @@ void PeerToPeer::checkQueue(QAudioOutput * audioOut)
 }
 
 
-/*
- * This function will play the next song in the list. It is auto triggered if it finds the
- * currently playing song has finished.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        playNextSong
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void PeerToPeer::playNextSong()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function will play the next song in the list. It is auto triggered if it finds the
+--                   currently playing song has finished.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::playNextSong() {
     if (stopThreadLoop) {
         disconnect( deviceListener, SIGNAL(workFinished(const QString)), this, SLOT(AddStatusMessage(QString)) );
@@ -375,6 +724,24 @@ void PeerToPeer::playNextSong() {
     queueThread->start();*/
 }
 
+
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_OpenPathButton_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       PeerToPeer::on_OpenPathButton_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           PeerToPeer::on_OpenPathButton_released()
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::on_OpenPathButton_released()
 {
     ui->listMusicFiles->addItems(QFileDialog::getOpenFileNames(this, tr("Open Wav files."),
@@ -383,6 +750,23 @@ void PeerToPeer::on_OpenPathButton_released()
 }
 
 
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_requestFileButton_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       PeerToPeer::on_requestFileButton_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function handles adding new files to the files list.
+------------------------------------------------------------------------------------------*/
 void PeerToPeer::on_requestFileButton_released()
 {
     std::string ip = ui->lineIPAddress->text().toStdString();

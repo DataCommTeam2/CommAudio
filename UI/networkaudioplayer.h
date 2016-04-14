@@ -9,6 +9,38 @@
 #include "circularbuffer.h"
 #include "networkmanager.h"
 
+
+/*--------------------------------------------------------------------------------------------  
+--  SOURCE:          NetworkAudioPlayer
+--  
+--  PROGRAM:         CommAudio
+--  
+--  FUNCTIONS:       NetworkAudioPlayer();
+--                   bool setup(QFile *);
+--                   void unpauseAudio();
+--                   ~NetworkAudioPlayer();
+--                   void finishedReading();
+--                   void finishedWriting();
+--                   void audioStarted(QAudioOutput *);
+--                   void sendToClient(char *, int);
+--                   void loadDataIntoBuffer();
+--                   void writeDataToDevice();
+--                   void playAudio();
+--                   
+--  
+--  DATE:            CommAudio
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--                   Gabriella Cheung
+--  
+--  REVISIONS:       Several
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--                   Gabriella Cheung
+--  
+--  NOTES:           This class handles playing audio that is retrieved from the network through a buffer.
+--                   It uses QAudioOutput to play the audio on the client's side.
+------------------------------------------------------------------------------------------*/
 class NetworkAudioPlayer : public QObject
 {
     Q_OBJECT

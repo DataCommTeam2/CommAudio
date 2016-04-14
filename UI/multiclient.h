@@ -11,6 +11,43 @@ namespace Ui {
 class MultiClient;
 }
 
+/*--------------------------------------------------------------------------------------------  
+--  SOURCE:          MultiClient
+--  
+--  PROGRAM:         CommAudio
+--  
+--  FUNCTIONS:       explicit MultiClient(QWidget *parent = 0);
+--                   
+--                   ~MultiClient();
+--                   
+--                   void on_buttonPlay_released();
+--                   
+--                   void on_buttonConnect_released();
+--                   
+--                   void on_buttonDisconnect_released();
+--                   
+--                   void on_buttonStopAudio_released();
+--                   
+--                   void successfulConnection(bool connected);
+--                   
+--                   void AddStatusMessage(const QString msg);
+--                   
+--                   void on_sliderSound_actionTriggered(int action);
+--                   
+--  
+--  DATE:            CommAudio
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--                   Gabriella Cheung
+--  
+--  REVISIONS:       Several
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--                   Gabriella Cheung
+--  
+--  NOTES:           This is the UI class for the multicast client UI window. It handles all buttons
+--                   and user interactions with the window.
+------------------------------------------------------------------------------------------*/
 class MultiClient : public QMainWindow
 {
     Q_OBJECT

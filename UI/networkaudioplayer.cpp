@@ -7,6 +7,38 @@
 QIODevice *aDevice;
 QThread *aPlayThread;
 
+
+/*--------------------------------------------------------------------------------------------  
+--  SOURCE:          NetworkAudioPlayer
+--  
+--  PROGRAM:         CommAudio
+--  
+--  FUNCTIONS:       NetworkAudioPlayer();
+--                   bool setup(QFile *);
+--                   void unpauseAudio();
+--                   ~NetworkAudioPlayer();
+--                   void finishedReading();
+--                   void finishedWriting();
+--                   void audioStarted(QAudioOutput *);
+--                   void sendToClient(char *, int);
+--                   void loadDataIntoBuffer();
+--                   void writeDataToDevice();
+--                   void playAudio();
+--                   
+--  
+--  DATE:            CommAudio
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--                   Gabriella Cheung
+--  
+--  REVISIONS:       Several
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--                   Gabriella Cheung
+--  
+--  NOTES:           This class handles playing audio that is retrieved from the network through a buffer.
+--                   It uses QAudioOutput to play the audio on the client's side.
+------------------------------------------------------------------------------------------*/
 NetworkAudioPlayer::NetworkAudioPlayer()
 {
     audioBuffer = new CircularBuffer(DATA_BUFSIZE, MAX_BLOCKS);
@@ -14,6 +46,25 @@ NetworkAudioPlayer::NetworkAudioPlayer()
 
 }
 
+
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        setup
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       bool NetworkAudioPlayer::setup(QFile * f)
+--  
+--  RETURNS:         bool
+--  
+--  NOTES:           This function sets up the network audio player, and gets ready to send the song
+--                   along the network.
+------------------------------------------------------------------------------------------*/
 bool NetworkAudioPlayer::setup(QFile * f) {
     file = f;
     wav_hdr wavHeader;
@@ -40,6 +91,24 @@ bool NetworkAudioPlayer::setup(QFile * f) {
     return true;
 }
 
+
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        loadDataIntoBuffer
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Gabriella Cheung
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Gabriella Cheung
+--  
+--  INTERFACE:       void NetworkAudioPlayer::loadDataIntoBuffer()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function loads the data from the file and puts it into the circular buffer.
+------------------------------------------------------------------------------------------*/
 void NetworkAudioPlayer::loadDataIntoBuffer()
 {
     char tempBuf[DATA_BUFSIZE];
@@ -56,6 +125,27 @@ void NetworkAudioPlayer::loadDataIntoBuffer()
     }
 }
 
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        playAudio
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Gabriella Cheung
+--                   Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Gabriella Cheung
+--                   Jaegar Sarauer
+--  
+--  INTERFACE:       void NetworkAudioPlayer::playAudio()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This fuction plays  the audio from the buffer. From whatever buffer data is available
+--                   at the time. After sending the data to the QAudioOutput, the fuction requests for more
+--                   data.
+------------------------------------------------------------------------------------------*/
 void NetworkAudioPlayer::playAudio()
 {
     //netManager = manager;
@@ -80,16 +170,6 @@ void NetworkAudioPlayer::playAudio()
         connect( aPlayThread, SIGNAL(started()), bufferListener, SLOT(checkBuffer()) );
         connect( this, SIGNAL(finishedWriting()), bufferListener, SLOT(checkBuffer()) );
         connect( bufferListener, SIGNAL(bufferHasData()), this, SLOT(writeDataToDevice()));
-
-        //connect (audio, SIGNAL(stateChanged(QAudio::State)), this, SLOT(checkDeviceStatus(QAudio::State)));
-
-        //connect( this, SIGNAL(finishedReading()), bufferListener, SLOT(stop()) );
-
-        //connect(bufferListener, SIGNAL(finished()), aPlayThread, SLOT(quit()));
-
-        //automatically delete thread and deviceListener object when work is done:
-        //connect( aPlayThread, SIGNAL(finished()), bufferListener, SLOT(deleteLater()) );
-        //connect( aPlayThread, SIGNAL(finished()), aPlayThread, SLOT(deleteLater()) );
         aPlayThread->start();
 
     } else {
@@ -99,26 +179,26 @@ void NetworkAudioPlayer::playAudio()
     emit audioStarted(audio);
 }
 
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        writeDataToDevice
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Gabriella Cheung
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Gabriella Cheung
+--  
+--  INTERFACE:       void NetworkAudioPlayer::writeDataToDevice()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function attempts to send data from the buffer into the QAudioOutput file for local
+--                   audio playing.
+------------------------------------------------------------------------------------------*/
 void NetworkAudioPlayer::writeDataToDevice()
 {
-    //send 8k of file
-    /*char tempBuf[DATA_BUFSIZE];
-    if (fp == NULL)
-    {
-        //std::string filen = file->fileName().toStdString();
-        //std::cerr << filen;
-        const char * filename = file->fileName().toStdString().c_str();
-        fp = fopen("honey.wav", "rb");
-        fseek(fp, 44*sizeof(char), SEEK_SET);
-    }
-    int bytesRead = fread(tempBuf, 1, DATA_BUFSIZE, fp);
-    if (bytesRead == 0)
-    {
-        //emit finishedReading();
-        //file->close();
-        fclose(fp);
-    }
-    netManager->sendMulticast(tempBuf, bytesRead);*/
     if (endThread)
         return;
     if (aDevice == NULL)
@@ -154,10 +234,45 @@ void NetworkAudioPlayer::writeDataToDevice()
     }
 }
 
+
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        unpauseAudio
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Gabriella Cheung
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Gabriella Cheung
+--  
+--  INTERFACE:       void NetworkAudioPlayer::unpauseAudio()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function resumes playing audio from the QAudioOutput player.
+------------------------------------------------------------------------------------------*/
 void NetworkAudioPlayer::unpauseAudio() {
     audio->resume();
 }
 
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        NetworkAudioPlayer
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Gabriella Cheung
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Gabriella Cheung
+--  
+--  INTERFACE:       void NetworkAudioPlayer::~NetworkAudioPlayer()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function stops playing audio from the QAudioOutput player and destroys it.
+------------------------------------------------------------------------------------------*/
 NetworkAudioPlayer::~NetworkAudioPlayer() {
     file->close();
     delete audio;
