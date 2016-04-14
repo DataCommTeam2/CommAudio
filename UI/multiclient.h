@@ -27,13 +27,13 @@ private slots:
 
     void on_buttonDisconnect_released();
 
-    void on_buttonPauseAudio_released();
-
     void on_buttonStopAudio_released();
 
     void successfulConnection(bool connected);
 
     void AddStatusMessage(const QString msg);
+
+    void on_sliderSound_actionTriggered(int action);
 
 private:
     Ui::MultiClient *ui;
@@ -42,6 +42,7 @@ private:
     bool stopThreadLoop = false;
     NetworkManager * netManager;
     AudioPlayThread * bufferListener;
+    QThread * playThread;
 };
 
 #endif // MULTICLIENT_H

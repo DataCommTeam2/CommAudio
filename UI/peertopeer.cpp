@@ -103,7 +103,6 @@ void PeerToPeer::on_buttonConnect_released()
 
     // ---- TODO ---- handle connecting to the peer here, use the above 2 strings as parameters for connection
     AddStatusMessage("Attempting to Connect...");
-
     startTCP(tcpPort);
     startP2P(ip.c_str(), port);
     successfulConnection(true);
@@ -118,7 +117,6 @@ void PeerToPeer::on_buttonStopAudio_released()
     localAudioManager->stopAudio();
     stopThreadLoop = true;
     currentQueueIndex--;
-    qDebug() << "WHAT4";
     if (!audioManager->stopAudio())
         return;
 }

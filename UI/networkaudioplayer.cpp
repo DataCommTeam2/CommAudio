@@ -1,5 +1,6 @@
 #include "networkaudioplayer.h"
 #include "networkmanager.h"
+#include <QDebug>
 
 #include <iostream>
 
@@ -21,6 +22,7 @@ bool NetworkAudioPlayer::setup(QFile * f) {
     if (bytesRead <= 0)
         return false;
 
+
     format.setSampleRate(wavHeader.SamplesPerSec);
     format.setChannelCount(wavHeader.NumOfChan);
     format.setSampleSize(wavHeader.bitsPerSample);
@@ -29,6 +31,7 @@ bool NetworkAudioPlayer::setup(QFile * f) {
     format.setByteOrder(QAudioFormat::LittleEndian);
     format.setSampleType(QAudioFormat::UnSignedInt);
     audio = new QAudioOutput(format, this);
+    audio->setBufferSize(DATA_BUFSIZE * 10);
     //audio->setNotifyInterval(500);
     //audioDevice = audio->start();
     //audioDevice->open(QIODevice::ReadWrite);
@@ -116,11 +119,20 @@ void NetworkAudioPlayer::writeDataToDevice()
         fclose(fp);
     }
     netManager->sendMulticast(tempBuf, bytesRead);*/
+    if (endThread)
+        return;
     if (aDevice == NULL)
     {
         aDevice = audio->start();
     }
     int freeSpace = audio->bytesFree();
+
+    if (file->atEnd())
+    {
+        file->close();
+        //signal to peer2peer to load next file?????
+    }
+
     if (freeSpace < DATA_BUFSIZE)
     {
         emit finishedWriting();
@@ -132,16 +144,21 @@ void NetworkAudioPlayer::writeDataToDevice()
         audio->setVolume(0.0);
         emit sendToClient(data, length);
         emit finishedWriting();
-    }
-    if (!file->atEnd())
-    {
-       loadDataIntoBuffer();
-    } else {
-        file->close();
-        //signal to peer2peer to load next file?????
+        if (!file->atEnd())
+        {
+           loadDataIntoBuffer();
+        } else {
+            file->close();
+            //signal to peer2peer to load next file?????
+        }
     }
 }
 
 void NetworkAudioPlayer::unpauseAudio() {
     audio->resume();
+}
+
+NetworkAudioPlayer::~NetworkAudioPlayer() {
+    file->close();
+    delete audio;
 }

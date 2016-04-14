@@ -259,7 +259,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="SendAudioButton">
+                  <widget class="QPushButton" name="QueueRemoveButton">
                    <property name="text">
                     <string>Remove From Queue</string>
                    </property>

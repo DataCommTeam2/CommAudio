@@ -10,6 +10,7 @@ class AudioPlayThread : public QObject
 public:
     AudioPlayThread(CircularBuffer * buf);
     //AudioPlayThread();
+    bool stopChecking;
 
 signals:
     void addMoreData();
@@ -23,7 +24,6 @@ public slots:
 
 private:
     CircularBuffer * buffer;
-    bool stopChecking;
 };
 
 #endif // AUDIOPLAYTHREAD_H

@@ -39,8 +39,6 @@ private slots:
 
     void successfulConnection(bool connected);
 
-    void on_SendAudioButton_released();
-
     void on_BroadcastButton_released();
 
     void on_SendMicrophone_released();

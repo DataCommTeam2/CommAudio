@@ -24,6 +24,8 @@ MultiClient::~MultiClient()
 
 void MultiClient::on_buttonPlay_released()
 {
+    audioManager->allowWrite = true;
+    AddStatusMessage("Audio Started.");
 }
 
 
@@ -44,9 +46,11 @@ void MultiClient::on_buttonConnect_released()
         successfulConnection(false);
         return;
     }
+    successfulConnection(true);
 
-    QThread * playThread = new QThread();
+    playThread = new QThread();
     audioManager->setupAudioPlayerNoFile(NetworkManager::incBuffer);
+    //audioManager->setupAudioPlayerP2P(NetworkManager::incBuffer);
     //incomingBuffer = audioManager->getAudioBuffer();
     //netManager->startUDPReceiver(incomingBuffer); //pass in circular buffer here
     netManager->startUDPReceiver(NULL);
@@ -92,11 +96,17 @@ void MultiClient::on_buttonDisconnect_released()
     ui->buttonDisconnect->hide();
     ui->AudioControls->hide();
     ui->ConnectionControls->setMaximumHeight(250);
+    //netManager->cleanUp();
+    //audioManager->allowWrite = false;
 }
 
-void MultiClient::on_buttonPauseAudio_released()
-{
 
+/*
+ * This function is called when the user moves the sound slider, it'll adjust the local program sound.
+ */
+void MultiClient::on_sliderSound_actionTriggered(int action)
+{
+    audioManager->setVolume((double)ui->sliderSound->sliderPosition() / 100);
 }
 
 /*
@@ -109,4 +119,6 @@ void MultiClient::AddStatusMessage(const QString msg) {
 
 void MultiClient::on_buttonStopAudio_released()
 {
+    audioManager->allowWrite = false;
+    AddStatusMessage("Audio Stopped.");
 }

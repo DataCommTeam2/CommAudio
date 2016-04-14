@@ -16,6 +16,9 @@ public:
     NetworkAudioPlayer();
     bool setup(QFile *);
     void unpauseAudio();
+    ~NetworkAudioPlayer();
+
+    bool endThread = false;
 private:
     QAudioFormat format;
     QAudioOutput *audio;

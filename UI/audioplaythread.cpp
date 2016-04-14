@@ -15,5 +15,7 @@ void AudioPlayThread::checkBuffer() {
     while (!stopChecking && buffer->getBlocksUnread() == 0)
     {
     }
-    emit bufferHasData();
+    if (!stopChecking)
+        emit bufferHasData();
+    qDebug() << "STILL";
 }

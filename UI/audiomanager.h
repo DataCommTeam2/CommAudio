@@ -35,6 +35,7 @@ public:
     bool isPaused();
     bool isPlaying();
     CircularBuffer * getAudioBuffer();
+    bool allowWrite = true;
 
     ~AudioManager();
 

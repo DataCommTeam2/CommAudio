@@ -6,13 +6,7 @@
 //}
 
 void AudioThread::checkForEnding() {
-    while (audioPlayer != NULL && audioPlayer->state() != QAudio::ActiveState) {
-        //qDebug() << "WON ONE 1";
-    }
-    while (audioPlayer != NULL && (audioPlayer->state() != QAudio::IdleState && audioPlayer->state() != QAudio::StoppedState)) {
-
-        //qDebug() << "TWO 2 TWO";
-    }
-    //qDebug() << "JLJLKL";
+    while (!forceKill && audioPlayer != NULL && audioPlayer->state() != QAudio::ActiveState) {}
+    while (!forceKill && audioPlayer != NULL && (audioPlayer->state() != QAudio::IdleState && audioPlayer->state() != QAudio::StoppedState)) {}
     emit workFinished(QString("Song finished, playing next song."));
 }

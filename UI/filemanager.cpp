@@ -9,7 +9,7 @@ FileManager::FileManager(NetworkManager *nManager)
 
 bool FileManager::requestFile(const char * fileName)
 {
-    QString absName = QDir::currentPath() + "/MusicFiles" + fileName;
+    QString absName = QDir::currentPath() + "/MusicFiles/" + fileName;
     fp = fopen(absName.toStdString().c_str(), "wb");
     return fp == NULL? false : true;
 }

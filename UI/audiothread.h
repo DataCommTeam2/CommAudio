@@ -16,14 +16,15 @@ public:
     //AudioThread();
     ~AudioThread() {}
 
+
+    QAudioOutput * audioPlayer;
+    bool forceKill = false;
+
 public slots:
     void checkForEnding();
 
 signals:
     void workFinished(const QString msg);
-
-private:
-    QAudioOutput * audioPlayer;
 
 };
 
