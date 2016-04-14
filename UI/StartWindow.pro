@@ -24,7 +24,6 @@ SOURCES += main.cpp\
     multiclient.cpp \
     audioplaythread.cpp \
     microphonemanager.cpp \
-    incomingconnthread.cpp \
     udpsendthread.cpp \
     audiorecordthread.cpp \
     localaudiomanager.cpp \
@@ -42,7 +41,6 @@ HEADERS  += startwindow.h \
     multiclient.h \
     audioplaythread.h \
     microphonemanager.h \
-    incomingconnthread.h \
     udpsendthread.h \
     audiorecordthread.h \
     localaudiomanager.h \

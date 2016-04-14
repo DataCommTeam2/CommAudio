@@ -15,7 +15,6 @@
 #include "audiothread.h"
 #include "microphonemanager.h"
 #include "networkmanager.h"
-#include "incomingconnthread.h"
 #include "networkaudioplayer.h"
 #include "filemanager.h"
 
@@ -135,7 +134,7 @@ public slots:
 signals:
     void stopMicrophoneRecording();
     void stopAudio();
-
+    void getFileFromPeer(FILE *);
 private:
     MicrophoneManager *mic;
     Ui::PeerToPeer *ui;
@@ -149,7 +148,6 @@ private:
     QThread *audioThread;
     QThread *socketThread;
     NetworkManager * networkManager;
-    IncomingConnThread * socketListener;
     AudioPlayThread * bufferListener;
     NetworkAudioPlayer * netAudioPlayer;
     FileManager * fileManager;

@@ -62,7 +62,7 @@ public:
     static CircularBuffer * incBuffer;
     static CircularBuffer * tcpBuffer;
     static SOCKET acceptSocket;
-    bool tcpConnected;
+    static bool tcpConnected;
 private:
     UDPSendThread * udpSender;
 

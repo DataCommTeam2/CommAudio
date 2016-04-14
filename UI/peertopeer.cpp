@@ -102,7 +102,16 @@ PeerToPeer::PeerToPeer(QWidget *parent) :
     currentQueueIndex = -1;
     networkManager = new NetworkManager();
     networkManager->startNetwork();
+
     fileManager = new FileManager(networkManager);
+    QThread * fileCheckerThread = new QThread();
+    fileManager->moveToThread(fileCheckerThread);
+    connect(fileCheckerThread, SIGNAL(started()), fileManager, SLOT(checkBuffer()));
+    connect(fileManager, SIGNAL(fileDone()), fileCheckerThread, SLOT(quit()));
+    connect(fileManager, SIGNAL(dataRead()), fileManager, SLOT(checkBuffer()));
+    connect(this, SIGNAL(getFileFromPeer(FILE *)), fileManager, SLOT(requestFile(FILE *)));
+    fileCheckerThread->start();
+
     netAudioPlayer = NULL;
 
     ui->controlsFrame->hide();
@@ -133,7 +142,7 @@ PeerToPeer::PeerToPeer(QWidget *parent) :
 void PeerToPeer::startTCP(int port)
 {
     networkManager->createTCPSocket();
-    networkManager->startTCPReceiver(port); // use default port for now
+    networkManager->startTCPReceiver(port);
 }
 
 /*--------------------------------------------------------------------------------------------  
@@ -710,18 +719,6 @@ void PeerToPeer::playNextSong() {
     connect( audioThread, SIGNAL(finished()), deviceListener, SLOT(deleteLater()) );
     connect( audioThread, SIGNAL(finished()), audioThread, SLOT(deleteLater()) );
     audioThread->start();
-
-    /*QThread * queueThread = new QThread();
-    deviceListener = new AudioThread(audio);
-    deviceListener->moveToThread(queueThread);
-    connect( queueThread, SIGNAL(started()), deviceListener, SLOT(checkForEnding()) );
-    connect( deviceListener, SIGNAL(workFinished(const QString)), this, SLOT(AddStatusMessage(QString)) );
-    connect( deviceListener, SIGNAL(workFinished(const QString)), this, SLOT(playNextSong()) );
-    connect( deviceListener, SIGNAL(workFinished(const QString)), queueThread, SLOT(quit()) );
-    //automatically delete thread and deviceListener object when work is done:
-    connect( queueThread, SIGNAL(finished()), deviceListener, SLOT(deleteLater()) );
-    connect( queueThread, SIGNAL(finished()), queueThread, SLOT(deleteLater()) );
-    queueThread->start();*/
 }
 
 
@@ -769,31 +766,30 @@ void PeerToPeer::on_OpenPathButton_released()
 ------------------------------------------------------------------------------------------*/
 void PeerToPeer::on_requestFileButton_released()
 {
-    std::string ip = ui->lineIPAddress->text().toStdString();
-    int tcpPort = atoi(ui->linePort->text().toUtf8().constData());
-    // attempt to connect to peer via TCP
-    if (networkManager->connectToPeer(ip.c_str(), tcpPort)) //will get port from UI
+    if (!NetworkManager::tcpConnected)
     {
-        AddStatusMessage("Successfully connected to peer.");
-    } else {
-        AddStatusMessage("Connection to peer failed.");
+        std::string ip = ui->lineIPAddress->text().toStdString();
+        int tcpPort = atoi(ui->linePort->text().toUtf8().constData());
+
+        // attempt to connect to peer via TCP
+        if (networkManager->connectToPeer(ip.c_str(), tcpPort))
+        {
+            AddStatusMessage("Successfully connected to peer.");
+        } else {
+            AddStatusMessage("Connection to peer failed.");
+        }
     }
     //get filename from UI
     std::string name = ui->filenameEdit->text().toStdString();
-    if (fileManager->requestFile(name.c_str()))
-    {
-        AddStatusMessage("File created. Requesting file...");
-        QThread * fileCheckerThread = new QThread();
-        fileManager->moveToThread(fileCheckerThread);
-        connect(fileCheckerThread, SIGNAL(started()), fileManager, SLOT(checkBuffer()));
-        connect(fileManager, SIGNAL(fileDone()), fileCheckerThread, SLOT(quit()));
-        fileCheckerThread->start();
+    AddStatusMessage("Requesting file...");
 
-        char msg[256];
-        msg[0] = 2;
-        memcpy(&msg[1], name.c_str(),name.length());
-        networkManager->sendViaTCP(msg, sizeof(msg));
-    } else {
-        AddStatusMessage("Cannot create file.");
-    }
+    fileManager->stopChecking = true;
+    QString absName = QDir::currentPath() + "/MusicFiles/" + name.c_str();
+    FILE * fp = fopen(absName.toStdString().c_str(), "wb");
+
+    emit getFileFromPeer(fp);
+    char msg[256] = {0};
+    msg[0] = 2;
+    memcpy(&msg[1], name.c_str(),name.length());
+    networkManager->sendViaTCP(msg, strlen(msg));
 }
