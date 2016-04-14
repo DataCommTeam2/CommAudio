@@ -94,7 +94,7 @@ int NetworkManager::createMulticastServerSocket(const char * IP, int port)
 
     /* Assign our destination address */
     stDstAddr.sin_family = AF_INET;
-    stDstAddr.sin_addr.s_addr = inet_addr("234.7.8.9");
+    stDstAddr.sin_addr.s_addr = inet_addr(IP);
     stDstAddr.sin_port = htons(port);
 
     if (udpSender == NULL)
@@ -138,7 +138,7 @@ bool NetworkManager::createMulticastClientSocket(const char * serverAddr, int po
     }
 
     //stMreq.imr_multiaddr.s_addr = inet_addr(serverAddr);
-    stMreq.imr_multiaddr.s_addr = inet_addr("234.7.8.9");
+    stMreq.imr_multiaddr.s_addr = inet_addr(serverAddr);
     stMreq.imr_interface.s_addr = INADDR_ANY;
     if (setsockopt(udpSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&stMreq, sizeof(stMreq)) == SOCKET_ERROR)
     {
@@ -166,12 +166,24 @@ bool NetworkManager::createTCPSocket()
     NetworkManager::tcpBuffer = new CircularBuffer(DATA_BUFSIZE, MAX_BLOCKS);
     return true;
 }
+/*<<<<<<< HEAD
 
 bool NetworkManager::connectToPeer(const char * hostname, int port)
 {
     return connectP2P(hostname, port);
 }
 
+=======*/
+
+bool NetworkManager::connectToPeer(const char * hostname, int port)
+{
+    closesocket(tcpSocket);
+    delete NetworkManager::tcpBuffer;
+    createTCPSocket();
+    return connectP2P(hostname, port);
+}
+
+//>>>>>>> 18aaf3d0ab9ab40b75ba5d04f142f432438b70e3
 bool connectP2P(const char * hostname, int port)
 {
     struct hostent	*hp;
@@ -296,15 +308,10 @@ void NetworkManager::sendP2P(char * buf, int length)
 --  out the details of the data transfer to the screen before closing the socket.
 --
 ---------------------------------------------------------------------------------*/
-void sendViaTCP()
+void NetworkManager::sendViaTCP(char * sbuf, int length)
 {
-    char *sbuf;
-    char message[256];
-
-    sbuf = (char*)malloc(DATA_BUFSIZE);
-
     // transmit data
-    if (send(tcpSocket, sbuf, strlen(sbuf), 0) == -1)
+    if (send(acceptSocket, sbuf, length, 0) == -1)
     {
         //sprintf(message, "error: %d", WSAGetLastError());
         //writeToScreen(message);
@@ -837,6 +844,7 @@ void CALLBACK tcpRoutine(DWORD errorCode, DWORD bytesTransferred, LPOVERLAPPED o
 
     if (bytesTransferred > 0)
     {
+/*<<<<<<< HEAD
         switch(status)
         {
         case NO_REQUEST_SENT: //haven't made request, so incoming is file name
@@ -859,7 +867,13 @@ void CALLBACK tcpRoutine(DWORD errorCode, DWORD bytesTransferred, LPOVERLAPPED o
     }
     else {
         return;
+=======*/
+        if (!(NetworkManager::tcpBuffer->cbWrite(socketInfo->DataBuf.buf, socketInfo->DataBuf.len)))
+        {
+        }
+//>>>>>>> 18aaf3d0ab9ab40b75ba5d04f142f432438b70e3
     }
+
     newFlags = 0;
     if (WSARecv(socketInfo->Socket, &(socketInfo->DataBuf), 1, NULL, &newFlags, &(socketInfo->Overlapped), tcpRoutine) == SOCKET_ERROR)
     {

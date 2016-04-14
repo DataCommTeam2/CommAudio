@@ -17,6 +17,50 @@ namespace Ui {
 class MultiServer;
 }
 
+
+/*--------------------------------------------------------------------------------------------  
+--  SOURCE:          MultiServer
+--  
+--  PROGRAM:         CommAudio
+--  
+--  FUNCTIONS:       explicit MultiServer(QWidget *parent = 0);
+--                   
+--                   ~MultiServer();
+--                   
+--                   void stopMicrophoneRecording();
+--                   
+--                   void on_QueueAddButton_released();
+--                   
+--                   void on_QueueRemoveButton_released();
+--                   
+--                   void playNextSong();
+--                   
+--                   void AddStatusMessage(QString msg);
+--                   
+--                   void successfulConnection(bool connected);
+--                   
+--                   void on_BroadcastButton_released();
+--                   
+--                   void on_SendMicrophone_released();
+--                   
+--                   void checkQueue(QAudioOutput * audioOut);
+--                   
+--                   void sendData(char * buffer, int length);
+--                   
+--  
+--  DATE:            CommAudio
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--                   Gabriella Cheung
+--  
+--  REVISIONS:       Several
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--                   Gabriella Cheung
+--  
+--  NOTES:           This is the UI class for the multicast server UI window. It handles all buttons
+--                   and user interactions with the window.
+------------------------------------------------------------------------------------------*/
 class MultiServer : public QMainWindow
 {
     Q_OBJECT
@@ -38,8 +82,6 @@ private slots:
     void AddStatusMessage(QString msg);
 
     void successfulConnection(bool connected);
-
-    void on_SendAudioButton_released();
 
     void on_BroadcastButton_released();
 

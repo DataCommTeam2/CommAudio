@@ -1,7 +1,43 @@
 #include "multiclient.h"
 #include "ui_multiclient.h"
 
-
+/*--------------------------------------------------------------------------------------------  
+--  SOURCE:          MultiClient
+--  
+--  PROGRAM:         CommAudio
+--  
+--  FUNCTIONS:       explicit MultiClient(QWidget *parent = 0);
+--                   
+--                   ~MultiClient();
+--                   
+--                   void on_buttonPlay_released();
+--                   
+--                   void on_buttonConnect_released();
+--                   
+--                   void on_buttonDisconnect_released();
+--                   
+--                   void on_buttonStopAudio_released();
+--                   
+--                   void successfulConnection(bool connected);
+--                   
+--                   void AddStatusMessage(const QString msg);
+--                   
+--                   void on_sliderSound_actionTriggered(int action);
+--                   
+--  
+--  DATE:            CommAudio
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--                   Gabriella Cheung
+--  
+--  REVISIONS:       Several
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--                   Gabriella Cheung
+--  
+--  NOTES:           This is the UI class for the multicast client UI window. It handles all buttons
+--                   and user interactions with the window.
+------------------------------------------------------------------------------------------*/
 MultiClient::MultiClient(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MultiClient)
@@ -17,18 +53,72 @@ MultiClient::MultiClient(QWidget *parent) :
     ui->ConnectionControls->setMaximumHeight(250);
 }
 
+
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        ~MultiClient
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiClient::~MultiClient();
+--  
+--  RETURNS:         void
+--  
+--  NOTES:            Destructor for the MultiClient window class.
+------------------------------------------------------------------------------------------*/
 MultiClient::~MultiClient()
 {
     delete ui;
 }
 
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_buttonPlay_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiClient::on_buttonPlay_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function catches a click on the play audio button. If the button is clicked,
+--                   it will play the audio from where it left off if its paused, if not, it will play
+--                   the next song in the list.
+------------------------------------------------------------------------------------------*/
 void MultiClient::on_buttonPlay_released()
 {
+    audioManager->allowWrite = true;
+    AddStatusMessage("Audio Started.");
 }
 
-
-
-
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_buttonConnect_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiClient::on_buttonConnect_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           When the user clicks the data sending button, this button will trigger on
+--                   and off for sending data.
+------------------------------------------------------------------------------------------*/
 void MultiClient::on_buttonConnect_released()
 {
     CircularBuffer * incomingBuffer;
@@ -44,9 +134,11 @@ void MultiClient::on_buttonConnect_released()
         successfulConnection(false);
         return;
     }
+    successfulConnection(true);
 
-    QThread * playThread = new QThread();
+    playThread = new QThread();
     audioManager->setupAudioPlayerNoFile(NetworkManager::incBuffer);
+    //audioManager->setupAudioPlayerP2P(NetworkManager::incBuffer);
     //incomingBuffer = audioManager->getAudioBuffer();
     //netManager->startUDPReceiver(incomingBuffer); //pass in circular buffer here
     netManager->startUDPReceiver(NULL);
@@ -61,12 +153,25 @@ void MultiClient::on_buttonConnect_released()
     playThread->start();
 }
 
-/*
- * This function will be called by the network layer to notify the application layer
- * with a confirmation message on a successful connection.
- * param bool connected = if true, successful connection, else, connection failed.
- */
-// ---- TODO ---- call this function on successful connection
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        successfulConnection
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiClient::successfulConnection(bool connected)
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function will be called by the network layer to notify the application layer
+--                   with a confirmation message on a successful connection.
+--                   param bool connected = if true, successful connection, else, connection failed.
+------------------------------------------------------------------------------------------*/
 void MultiClient::successfulConnection(bool connected) {
     if (connected) {
         ui->IPControls->hide();
@@ -81,6 +186,24 @@ void MultiClient::successfulConnection(bool connected) {
         AddStatusMessage("Unable to connect to server.");
 }
 
+
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_buttonDisconnect_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiClient::on_buttonDisconnect_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function will disconnect the user when they click the disconnect button.
+------------------------------------------------------------------------------------------*/
 void MultiClient::on_buttonDisconnect_released()
 {
     // ---- TODO ---- disconnect this client here.
@@ -92,21 +215,77 @@ void MultiClient::on_buttonDisconnect_released()
     ui->buttonDisconnect->hide();
     ui->AudioControls->hide();
     ui->ConnectionControls->setMaximumHeight(250);
+    //netManager->cleanUp();
+    //audioManager->allowWrite = false;
 }
 
-void MultiClient::on_buttonPauseAudio_released()
+
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_sliderSound_actionTriggered
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiClient::on_sliderSound_actionTriggered(int action)
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function is called when the user moves the sound slider, it'll adjust 
+--                   the local program sound.
+------------------------------------------------------------------------------------------*/
+void MultiClient::on_sliderSound_actionTriggered(int action)
 {
-
+    audioManager->setVolume((double)ui->sliderSound->sliderPosition() / 100);
 }
 
-/*
- * This function will add a status message to the status bar.
- */
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        AddStatusMessage
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiClient::AddStatusMessage(const QString msg)
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           This function will add a status message to the status bar.
+------------------------------------------------------------------------------------------*/
 void MultiClient::AddStatusMessage(const QString msg) {
     if (!stopThreadLoop)
         ui->StatusBar->addItem(QString(msg));
 }
 
+
+/*--------------------------------------------------------------------------------------------  
+--  FUNCTION:        on_buttonStopAudio_released
+--  
+--  DATE:            April 14th, 2016
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       NONE
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  INTERFACE:       void MultiClient::on_buttonStopAudio_released()
+--  
+--  RETURNS:         void
+--  
+--  NOTES:           When the user clicks the stop button, stop the audio, and stop the queue
+--                   thread from attempting to play the next song.
+------------------------------------------------------------------------------------------*/
 void MultiClient::on_buttonStopAudio_released()
 {
+    audioManager->allowWrite = false;
+    AddStatusMessage("Audio Stopped.");
 }

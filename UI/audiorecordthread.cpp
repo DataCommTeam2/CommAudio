@@ -2,7 +2,7 @@
 
 void AudioRecordThread::checkMicrophone()
 {
-    char data[MAX_LEN + 10];
+    char data[MAX_LEN + 1000];
     int blockSize = buffer->size() - position;
     if (blockSize <= MAX_LEN)
     {

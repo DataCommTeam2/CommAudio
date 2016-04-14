@@ -23,6 +23,69 @@ namespace Ui {
 class PeerToPeer;
 }
 
+
+/*--------------------------------------------------------------------------------------------  
+--  SOURCE:          PeerToPeer
+--  
+--  PROGRAM:         CommAudio
+--  
+--  FUNCTIONS:       explicit PeerToPeer(QWidget *parent = 0);
+--                   
+--                   ~PeerToPeer();
+--                   
+--                   void on_sliderSound_actionTriggered(int action);
+--                   
+--                   void on_buttonConnect_released();
+--                   
+--                   void on_DataSendingButton_released();
+--                   
+--                   void on_buttonStopAudio_released();
+--                   
+--                   void on_buttonPauseAudio_released();
+--                   
+--                   void on_QueueAddButton_released();
+--                   
+--                   void playNextSong();
+--                   
+--                   void AddStatusMessage(const QString msg);
+--                   
+--                   void on_QueueRemoveButton_released();
+--                   
+--                   void successfulConnection(bool connected);
+--                   
+--                   void on_buttonDisconnect_released();
+--                   
+--                   void on_buttonPlay_released();
+--                   
+--                   void on_SendMicrophone_released();
+--                   
+--                   void on_OpenPathButton_released();
+--                   
+--                   void startP2P(const char * ip, int port);
+--                   
+--                   void checkQueue(QAudioOutput * audioOut);
+--                   
+--                   void startTCP(int port);
+--                   
+--                   void on_requestFileButton_released();
+--                   
+--                   void sendData(char * buffer, int length);
+--                   
+--                   void stopMicrophoneRecording();
+--                   
+--                   void stopAudio();
+--  
+--  DATE:            CommAudio
+--  
+--  DESIGNERS:       Jaegar Sarauer
+--  
+--  REVISIONS:       Several
+--  
+--  PROGRAMMERS:     Jaegar Sarauer
+--  
+--  NOTES:           This is the UI class for the Peer to Peer window. This class handles all interactions
+--                   with the peer to peer window.
+------------------------------------------------------------------------------------------*/
 class PeerToPeer : public QMainWindow
 {
     Q_OBJECT

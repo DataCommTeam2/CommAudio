@@ -28,7 +28,8 @@ SOURCES += main.cpp\
     udpsendthread.cpp \
     audiorecordthread.cpp \
     localaudiomanager.cpp \
-    filemanager.cpp
+    filemanager.cpp \
+    filereader.cpp
 
 HEADERS  += startwindow.h \
     multiserver.h \
@@ -46,7 +47,8 @@ HEADERS  += startwindow.h \
     audiorecordthread.h \
     localaudiomanager.h \
     wavheader.h \
-    filemanager.h
+    filemanager.h \
+    filereader.h
 
 FORMS    += startwindow.ui \
     multiserver.ui \
