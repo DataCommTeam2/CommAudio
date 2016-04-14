@@ -13,14 +13,11 @@ typedef struct _SOCKET_INFORMATION {
 
 } SOCKET_INFORMATION, *LPSOCKET_INFORMATION;
 
-#define NO_REQUEST_SENT     0
-#define REQUEST_SENT        1
-
-int status = NO_REQUEST_SENT;
 SOCKET udpSocket, udpSendSocket, udpRecvSocket;
 SOCKET tcpSocket, tcpSendSocket;
 struct sockaddr_in udpPeer, tcpPeer, stDstAddr, stSrcAddr;
 BOOL serverRunning = false;
+BOOL tcpServerRunning = false;
 int uPort, tPort;
 HANDLE hWriteFile, hServerLogFile;
 WSAEVENT udpEvent, tcpEvent;
@@ -28,7 +25,7 @@ struct ip_mreq stMreq;
 char incFilename[256];
 
 CircularBuffer * NetworkManager::incBuffer;
-CircularBuffer * NetworkManager::tcpBuffer;
+CircularBuffer * NetworkManager::tcpBuffer = NULL;
 SOCKET NetworkManager::acceptSocket;
 
 DWORD WINAPI udpThread(LPVOID lpParameter);
@@ -37,10 +34,11 @@ void CALLBACK udpRoutine(DWORD, DWORD, LPOVERLAPPED, DWORD);
 DWORD WINAPI tcpThread(LPVOID lpParameter);
 DWORD WINAPI startTCPServer(LPVOID n);
 void CALLBACK tcpRoutine(DWORD, DWORD, LPOVERLAPPED, DWORD);
-void sendViaTCP();
+void sendViaTCP(char *, int);
 void sendViaUDP(const char *);
 bool connectP2P(const char * hostname, int port);
-
+DWORD WINAPI tcpSelectThread(LPVOID lpParameter);
+DWORD WINAPI startConnectedTCPReceive(LPVOID n);
 
 bool NetworkManager::startNetwork()
 {
@@ -170,14 +168,19 @@ bool NetworkManager::createTCPSocket()
 bool NetworkManager::connectToPeer(const char * hostname, int port)
 {
     closesocket(tcpSocket);
+    tcpServerRunning = false;
     delete NetworkManager::tcpBuffer;
     createTCPSocket();
-    return connectP2P(hostname, port);
+    NetworkManager::acceptSocket = tcpSocket;
+    bool success = connectP2P(hostname, port);
+    return success;
 }
 
 bool connectP2P(const char * hostname, int port)
 {
     struct hostent	*hp;
+    HANDLE tcpHandle;
+    DWORD tcpThreadId;
 
     // Store server's information
     memset((char *)&tcpPeer, 0, sizeof(tcpPeer));
@@ -191,11 +194,83 @@ bool connectP2P(const char * hostname, int port)
     }
 
     memcpy((char *)&tcpPeer.sin_addr, hp->h_addr, hp->h_length);
-    if (connect(tcpSocket, (struct sockaddr *)&tcpPeer, sizeof(tcpPeer)) == -1)
+    if (connect(NetworkManager::acceptSocket, (struct sockaddr *)&tcpPeer, sizeof(tcpPeer)) == -1)
     {
         //writeToScreen("Can't connect to server");
         return false;
     }
+
+    if ((tcpHandle = CreateThread(NULL, 0, startConnectedTCPReceive, 0, 0, &tcpThreadId)) == NULL)
+    {
+        //display error
+        return false;
+    }
+    tcpServerRunning = true;
+    return true;
+}
+
+DWORD WINAPI startConnectedTCPReceive(LPVOID n)
+{
+    DWORD threadId;
+    HANDLE threadHandle;
+    fd_set fds;
+    struct timeval tv;
+    int selectRet, error = 0;
+
+    if ((tcpEvent = WSACreateEvent()) == WSA_INVALID_EVENT)
+    {
+        //writeToScreen("WSACreateEvent() failed");
+    }
+
+    if ((threadHandle = CreateThread(NULL, 0, tcpSelectThread, (LPVOID)tcpEvent, 0, &threadId)) == NULL)
+    {
+        //writeToScreen("CreateThread() failed");
+    }
+
+    FD_ZERO(&fds);
+    FD_SET(tcpSocket, &fds);
+
+    tv.tv_sec = 3600;
+    tv.tv_usec = 0;
+
+    while (true)
+    {
+        selectRet = select(tcpSocket, &fds, NULL, NULL, &tv);
+        if (serverRunning)
+        {
+            if (selectRet == SOCKET_ERROR)
+            {
+                if ((error = WSAGetLastError()) != WSA_IO_PENDING)
+                {
+                    break;
+                }
+            }
+            else if (selectRet == 0)
+            {
+                tv.tv_sec = 3600;
+                FD_ZERO(&fds);
+                FD_SET(tcpSocket, &fds);
+
+                if (WSASetEvent(tcpEvent) == FALSE)
+                {
+                    //writeToScreen("Resetting event failed");
+                }
+            }
+            else {
+                if (WSASetEvent(tcpEvent) == FALSE)
+                {
+                    //writeToScreen("Resetting event failed");
+                }
+                //tv.tv_sec = 1;
+            }
+        }
+        else {
+            break;
+        }
+
+    }
+    //return 0;
+    ExitThread(0);
 }
 
 void NetworkManager::cleanUp()
@@ -611,18 +686,12 @@ void NetworkManager::startTCPReceiver(int port)
     NetworkManager::acceptSocket = NULL;
     tPort = port;
 
-    if ((tcpSocket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED)) == INVALID_SOCKET)
-    {
-        //display error
-        return;
-    }
-
     if ((tcpHandle = CreateThread(NULL, 0, startTCPServer, 0, 0, &tcpThreadId)) == NULL)
     {
         //display error
         return;
     }
-    serverRunning = true;
+    tcpServerRunning = true;
 }
 
 /*---------------------------------------------------------------------------------
@@ -695,7 +764,7 @@ DWORD WINAPI startTCPServer(LPVOID n)
         //writeToScreen("CreateThread() failed");
     }
 
-    while (serverRunning)
+    while (tcpServerRunning)
     {
         NetworkManager::acceptSocket = accept(tcpSocket, NULL, NULL);
 
@@ -735,6 +804,88 @@ DWORD WINAPI startTCPServer(LPVOID n)
 --
 ---------------------------------------------------------------------------------*/
 DWORD WINAPI tcpThread(LPVOID lpParameter)
+{
+    LPSOCKET_INFORMATION socketInfo;
+    WSAEVENT eventArray[1];
+    DWORD index, flags;
+    int error = 0;
+    char message[256];
+    SOCKADDR_IN	client;
+    int clientSize = sizeof(SOCKADDR_IN);
+
+    eventArray[0] = (WSAEVENT)lpParameter;
+    while (true)
+    {
+        while (true)
+        {
+            index = WSAWaitForMultipleEvents(1, eventArray, FALSE, WSA_INFINITE, TRUE);
+
+            if (index == WSA_WAIT_FAILED)
+            {
+                //writeToScreen("WSAWaitForMultipleEvents failed");
+                break;
+            }
+            if (index != WAIT_IO_COMPLETION)
+            {
+                break;
+            }
+        }
+
+        WSAResetEvent(eventArray[index - WSA_WAIT_EVENT_0]);
+
+        // Create a socket information structure to associate with socket.
+        if ((socketInfo = (LPSOCKET_INFORMATION)GlobalAlloc(GPTR,
+            sizeof(SOCKET_INFORMATION))) == NULL)
+        {
+            //sprintf(message, "GlobalAlloc() failed with error %d\n", GetLastError());
+           // writeToScreen(message);
+            return FALSE;
+        }
+
+        // Fill in the details of our accepted socket.
+        socketInfo->Socket = NetworkManager::acceptSocket;
+        ZeroMemory(&(socketInfo->Overlapped), sizeof(WSAOVERLAPPED));
+        socketInfo->DataBuf.len = DATA_BUFSIZE;
+        socketInfo->DataBuf.buf = socketInfo->Buffer;
+        socketInfo->Timeout = INFINITE;
+
+        flags = 0;
+        if (WSARecv(socketInfo->Socket, &(socketInfo->DataBuf), 1, NULL, &flags, &(socketInfo->Overlapped), tcpRoutine) == SOCKET_ERROR)
+        {
+            if ((error = WSAGetLastError()) != WSA_IO_PENDING)
+            {
+                //sprintf(message, "WSARecv failed with error %d", error);
+                //writeToScreen(message);
+            }
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------------
+--	FUNCTION: tcpSelectThread
+--
+--	DATE:		Feb 14, 2016
+--
+--	REVISIONS:	Feb 14, 2016
+--
+--	DESIGNER:	Gabriella Cheung
+--
+--	PROGRAMMER:	Gabriella Cheung
+--
+--	INTERFACE:	DWORD WINAPI tcpSelectThread(LPVOID lpParameter)
+--
+--	PARAMETERS:	LPVOID lpParameter - WSAEvent from startTCPServer
+--
+--	RETURNS:	DWORD
+--
+--	NOTES:
+--	This function calls WSAWaitForMultipleEvents. When it receives an event,
+--  it creates a socketInfo data structure and calls WSARecv to read data from
+--  the socket into socketInfo. When WSARecv has read data successfully, a
+--  completion routine is called.
+--
+---------------------------------------------------------------------------------*/
+DWORD WINAPI tcpSelectThread(LPVOID lpParameter)
 {
     LPSOCKET_INFORMATION socketInfo;
     WSAEVENT eventArray[1];

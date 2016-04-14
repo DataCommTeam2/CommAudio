@@ -3,7 +3,7 @@
 
 void FileReader::startReading()
 {
-    QString absName = QDir::currentPath() + "/MusicFiles" + filename;
+    QString absName = QDir::currentPath() + "/MusicFiles/" + filename;
     fp = fopen(absName.toStdString().c_str(), "rb");
     if (fp == NULL)
     {
@@ -22,6 +22,6 @@ void FileReader::startReading()
             emit fileDone();
             return;
         }
-        emit sendPacket(data, t);
+        emit sendPacket(data, t+1);
     }
 }

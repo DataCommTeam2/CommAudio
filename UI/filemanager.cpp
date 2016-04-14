@@ -7,11 +7,10 @@ FileManager::FileManager(NetworkManager *nManager)
     networkManager = nManager;
 }
 
-bool FileManager::requestFile(const char * fileName)
+void FileManager::requestFile(const char * fileName)
 {
-    QString absName = QDir::currentPath() + "/MusicFiles" + fileName;
+    QString absName = QDir::currentPath() + "/MusicFiles/" + fileName;
     fp = fopen(absName.toStdString().c_str(), "wb");
-    return fp == NULL? false : true;
 }
 
 void FileManager::writeToFile(char * data, int length)
@@ -26,9 +25,10 @@ void FileManager::writeToFile(char * data, int length)
 
 void FileManager::checkBuffer()
 {
-    int bytesInBuffer = NetworkManager::tcpBuffer->getLastBytesWritten();
-    while(NetworkManager::tcpBuffer->getBlocksUnread() > 0)
-    {
+    int bytesInBuffer;
+    while(NetworkManager::tcpBuffer == NULL || NetworkManager::tcpBuffer->getBlocksUnread() == 0){}
+    //while(NetworkManager::tcpBuffer->getBlocksUnread() > 0)
+    //{
         bytesInBuffer = NetworkManager::tcpBuffer->getLastBytesWritten();
         memcpy(incomingData, NetworkManager::tcpBuffer->cbRead(1), bytesInBuffer);
         switch(incomingData[0])
@@ -47,7 +47,8 @@ void FileManager::checkBuffer()
         default:
             break;
         }
-    }
+    //}
+    emit dataRead();
 }
 
 void FileManager::openFileForSending(char * filename)

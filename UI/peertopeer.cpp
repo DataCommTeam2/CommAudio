@@ -23,7 +23,16 @@ PeerToPeer::PeerToPeer(QWidget *parent) :
     currentQueueIndex = -1;
     networkManager = new NetworkManager();
     networkManager->startNetwork();
+
     fileManager = new FileManager(networkManager);
+    QThread * fileCheckerThread = new QThread();
+    fileManager->moveToThread(fileCheckerThread);
+    connect(fileCheckerThread, SIGNAL(started()), fileManager, SLOT(checkBuffer()));
+    connect(fileManager, SIGNAL(fileDone()), fileCheckerThread, SLOT(quit()));
+    connect(fileManager, SIGNAL(dataRead()), fileManager, SLOT(checkBuffer()));
+    connect(this, SIGNAL(getFile(char*)), fileManager, SLOT(requestFile(char*)));
+    fileCheckerThread->start();
+
     netAudioPlayer = NULL;
 
     ui->controlsFrame->hide();
@@ -36,7 +45,7 @@ PeerToPeer::PeerToPeer(QWidget *parent) :
 void PeerToPeer::startTCP(int port)
 {
     networkManager->createTCPSocket();
-    networkManager->startTCPReceiver(port); // use default port for now
+    networkManager->startTCPReceiver(port);
 }
 
 void PeerToPeer::startP2P(const char * ip, int port)
@@ -398,20 +407,12 @@ void PeerToPeer::on_requestFileButton_released()
     }
     //get filename from UI
     std::string name = ui->filenameEdit->text().toStdString();
-    if (fileManager->requestFile(name.c_str()))
-    {
-        AddStatusMessage("File created. Requesting file...");
-        QThread * fileCheckerThread = new QThread();
-        fileManager->moveToThread(fileCheckerThread);
-        connect(fileCheckerThread, SIGNAL(started()), fileManager, SLOT(checkBuffer()));
-        connect(fileManager, SIGNAL(fileDone()), fileCheckerThread, SLOT(quit()));
-        fileCheckerThread->start();
+    AddStatusMessage("Requesting file...");
 
-        char msg[256];
-        msg[0] = 2;
-        memcpy(&msg[1], name.c_str(),name.length());
-        networkManager->sendViaTCP(msg, sizeof(msg));
-    } else {
-        AddStatusMessage("Cannot create file.");
-    }
+    emit getFile(name.c_str());
+    char msg[256];
+    msg[0] = 2;
+    int length = name.length();
+    memcpy(&msg[1], name.c_str(),name.length());
+    networkManager->sendViaTCP(msg, strlen(msg));
 }

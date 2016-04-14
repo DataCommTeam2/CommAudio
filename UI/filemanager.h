@@ -10,14 +10,15 @@ class FileManager : public QObject
     Q_OBJECT
 public:
     FileManager(NetworkManager * nManager);
-    bool requestFile(const char * fileName);
     void openFileForSending(char * filename);
 public slots:
     void writeToFile(char * data, int length);
     void checkBuffer();
+    void requestFile(const char * fileName);
 signals:
     void errorFromPeer();
     void fileDone();
+    void dataRead();
 private:
     NetworkManager * networkManager;
     FILE * fp;

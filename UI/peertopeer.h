@@ -72,6 +72,7 @@ public slots:
 signals:
     void stopMicrophoneRecording();
     void stopAudio();
+    void getFile(const char *);
 
 private:
     MicrophoneManager *mic;
